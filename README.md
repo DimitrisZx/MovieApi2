@@ -1,0 +1,1 @@
+This repo is an attempt to learn about Minimal APIs in .Net Core along with Entity Framework. I am following this [tutorial](https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-8.0&tabs=visual-studio-code) from the .Net Docs and slightly modifying it
