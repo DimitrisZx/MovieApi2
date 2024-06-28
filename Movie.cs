@@ -8,7 +8,7 @@ public class Movie
     public Genre Genre { get; set; }
     public int BoxOffice { get; set; }
     public bool Owned { get; set; }
-    public Actor[] Actors { get; set; }
+    public required Actor[] Actors { get; set; }
 }
 
 public class Actor
