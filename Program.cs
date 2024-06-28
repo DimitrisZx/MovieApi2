@@ -40,14 +40,13 @@ app.MapPut("/movies/{id}", async (int id, Movie inputMovie, MovieDb db) =>
 
 app.MapDelete("/movies/{id}", async (int id, MovieDb db) =>
 {
-    if (await db.Movies.FindAsync(id) is Movie movie)
-    {
-        db.Movies.Remove(movie);
-        await db.SaveChangesAsync();
-        return Results.NoContent();
-    }
+    if (await db.Movies.FindAsync(id) is not { } movie) 
+        return Results.NotFound();
+    
+    db.Movies.Remove(movie);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
 
-    return Results.NotFound();
 });
     
 
