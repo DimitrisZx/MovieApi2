@@ -1,10 +1,32 @@
 using MovieApi2;
 using Microsoft.EntityFrameworkCore;
+using NSwag.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MovieDb>(options => options.UseInMemoryDatabase("Movies"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApiDocument(config =>
+{
+    config.DocumentName = "MovieApi";
+    config.Title = "MovieApi v1";
+    config.Version = "v1";
+});
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi(config =>
+    {
+        config.DocumentTitle = "MovieApi";
+        config.Path = "/swagger";
+        config.DocumentPath = "/swagger/{documentName}/swagger.json";
+        config.DocExpansion = "list";
+    });
+}
 
 app.MapGet("/", () => "Hello World!");
 
