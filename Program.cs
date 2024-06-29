@@ -51,7 +51,7 @@ static async Task<IResult> GetMovie(int id, MovieDb db)
 
 static async Task<IResult> GetAvailableMovies(MovieDb db)
 {
-    var movies= await db.Movies.Where(m => !m.Owned).ToListAsync();
+    var movies = await db.Movies.Where(m => !m.Owned).ToListAsync();
     return TypedResults.Ok(movies);
 };
 
