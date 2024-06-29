@@ -1,6 +1,5 @@
 using MovieApi2;
 using Microsoft.EntityFrameworkCore;
-using NSwag.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MovieDb>(options => options.UseInMemoryDatabase("Movies"));
@@ -30,46 +29,61 @@ if (app.Environment.IsDevelopment())
 
 var movies = app.MapGroup("/movies");
 
-movies.MapGet("/", async (MovieDb db) =>
-    await db.Movies.ToListAsync());
+movies.MapGet("/", GetAllMovies);
+movies.MapGet("/available", GetAvailableMovies);
+movies.MapGet("/{id}", GetMovie);
+movies.MapPost("/", CreateMovie);
+movies.MapPut("/{id}", UpdateMovie);
+movies.MapDelete("/{id}", DeleteMovie);
 
-movies.MapGet("/available", async (MovieDb db) =>
-    await db.Movies.Where(m => !m.Owned).ToListAsync());
+static async Task<IResult> GetAllMovies(MovieDb db)
+{
+    return TypedResults.Ok(await db.Movies.ToArrayAsync());
+}
 
-movies.MapGet("/{id}", async (int id, MovieDb db) =>
-    await db.Movies.Where(m => m.Id == id).ToListAsync());
+static async Task<IResult> GetMovie(int id, MovieDb db)
+{
+    return await db.Movies.FindAsync(id)
+        is { } movie
+        ? TypedResults.Ok(movie)
+        : TypedResults.NotFound();
+}
 
-movies.MapPost("/", async (Movie movie, MovieDb db) =>
+static async Task<IResult> GetAvailableMovies(MovieDb db)
+{
+    var movies= await db.Movies.Where(m => !m.Owned).ToListAsync();
+    return TypedResults.Ok(movies);
+};
+
+static async Task<IResult> CreateMovie(Movie movie, MovieDb db)
 {
     db.Movies.Add(movie);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/movies/{movie.Id}", movie);
-});
+    return TypedResults.Created($"/movies/{movie.Id}", movie);
+}
 
-movies.MapPut("/{id}", async (int id, Movie inputMovie, MovieDb db) =>
+static async Task<IResult> UpdateMovie(int id, Movie inputMovie, MovieDb db)
 {
     var movie = await db.Movies.FindAsync(id);
-
-    if (movie is null) return Results.NotFound();
-
+    if (movie is null)
+        return TypedResults.NotFound();
     movie.Title = inputMovie.Title;
     movie.Owned = inputMovie.Owned;
 
     await db.SaveChangesAsync();
-    return Results.NoContent();
-});
+    return TypedResults.NoContent();
+}
 
-movies.MapDelete("/{id}", async (int id, MovieDb db) =>
+static async Task<IResult> DeleteMovie(int id, MovieDb db)
 {
-    if (await db.Movies.FindAsync(id) is not { } movie) 
-        return Results.NotFound();
-    
+    if (await db.Movies.FindAsync(id) is not { } movie)
+        return TypedResults.NotFound();
     db.Movies.Remove(movie);
     await db.SaveChangesAsync();
-    return Results.NoContent();
+    return TypedResults.NoContent();
+};
 
-});
     
 
 app.Run();
